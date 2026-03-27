@@ -1,0 +1,28 @@
+`timescale 1ns/1ps
+
+module tb_comparison;
+    reg [3:0] A, B;
+    reg Cin;
+    wire [3:0] sum_rca, sum_cla;
+    wire cout_rca, cout_cla;
+
+    rca_4bit rca_inst (.A(A), .B(B), .Cin(Cin), .Sum(sum_rca), .Cout(cout_rca));
+    cla_4bit cla_inst (.A(A), .B(B), .Cin(Cin), .Sum(sum_cla), .Cout(cout_cla));
+
+    initial begin
+        $dumpfile("dump.vcd");
+        $dumpvars(0, tb_comparison);
+
+        A = 0; B = 0; Cin = 0;
+        #50; // Wait for initial state to settle
+
+        $display("[%0t ns] Applying 15 + 1", $time);
+        A = 4'b1111; B = 4'b0001;
+       
+        #50; // CRITICAL: Wait 50ns for the carry to ripple through all gates!
+       
+        $display("[%0t ns] Final Results:", $time);
+        $display("RCA: %d | CLA: %d", {cout_rca, sum_rca}, {cout_cla, sum_cla});
+        $finish;
+    end
+endmodule
